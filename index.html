@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="bower_components/web3/dist/web3.js"></script>
+</head>
+<body>
+    
+  <script>
+    var foo;
+console.log('1')
+    window.addEventListener('load', function() {
+console.log('2')
+
+
+      // Checking if Web3 has been injected by the browser (Mist/MetaMask)
+      if (typeof web3 !== 'undefined') {
+console.log('3', web3.currentProvider)
+        // Use Mist/MetaMask's provider
+        foo = new Web3(web3.currentProvider);
+
+        foo.eth.accounts = new Proxy(foo.eth.accounts, {
+          get (target, key) {
+            console.info(`Get on property "${key}"`)
+            return target[key]
+          }
+        });
+
+        // Object.observe(foo.eth.accounts, changes => {
+        //   console.log('changes', changes)
+        // })
+      } else {
+        console.log('No web3? You should consider trying MetaMask!')
+        // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
+        foo = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+      }
+
+      console.log('coinbase', foo.eth.coinbase)
+      foo.eth.getCoinbase((err, cb) => {
+        console.log('cb', cb);
+        foo.eth.getBalance(cb, (err, balance) => {
+          console.log('balance', balance);
+        })
+      });
+
+
+
+      console.log('api', foo.version.api);
+      foo.version.getNode((err, node) => {
+        console.log('node', err, node);
+      });
+      foo.version.getEthereum((err, eth) => {
+        console.log('eth', err, eth);
+      });
+      foo.version.getWhisper((err, eth) => {
+        console.log('shh', err, eth);
+      });
+
+      console.log('isConnected', foo.isConnected())
+
+      // Now you can start your app & access web3 freely:
+      // startApp()
+      foo.version.getNetwork((err, netId) => {
+        console.log('rc', err, netId)
+        console.log('account', foo.eth.accounts)
+        switch (netId) {
+          case "1":
+            console.log('This is mainnet')
+            break
+          case "2":
+            console.log('This is the deprecated Morden test network.')
+            break
+          case "3":
+            console.log('This is the ropsten test network.')
+            break
+          default:
+            console.log('This is an unknown network.')
+        }
+      })
+
+      console.log('default', foo.eth.defaultAccount);
+      
+      var account = foo.eth.accounts[0];
+      console.log('accounts', foo.eth.accounts)
+      foo.eth.getAccounts((err, accounts) => {
+        console.log('accounts', accounts, accounts[0])
+      })
+
+//       var accountInterval = setInterval(function() {
+// console.log('x', foo.eth.accounts)        
+//         if (web3.eth.accounts[0] !== account) {
+//           account = web3.eth.accounts[0];
+//         }
+      // }, 100);
+    })          
+
+
+
+/*
+
+
+    function get( target, prop, receiver ) {
+  console.log( 'target: ' + target );
+  console.log( 'property: ' + prop );
+//   console.log( 'Receiver: ' + receiver );
+  return Reflect.get( target, prop, receiver );
+}
+
+var handler = {
+  'get': get
+};
+
+// Create a proxy for a plain array:
+var proxy = new Proxy( [1,2,3,4,5], handler );
+
+console.log( 'Result => beep: ' + proxy.beep );
+console.log( 'Result => -123: ' + proxy[ -123] );
+console.log( proxy.fill( 1 ) );
+console.log( 'Result => 0: ' + proxy[ 0 ] );
+
+// Set the prototype of a plain array to the proxy, based on the premise that the prototype of an array is an array...
+var arr1 = [ 10, 20, 30, 40, 50 ];
+Object.setPrototypeOf( arr1, proxy );
+
+console.log( 'Result => beep: ' + arr1.beep );
+console.log( 'Result => -123: ' + arr1[ -123 ] );
+console.log( arr1.fill( 100 ) );
+console.log( 'Result => 0: ' + arr1[ 0 ] );
+*/
+  </script>
+</body>
+</html>
